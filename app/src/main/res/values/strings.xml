@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Glyph water toy</string>
+
+    <string name="toy_name">Glyph water toy</string>
+    <string name="toy_summary">Simulates water on glyph matrix display.</string>
+</resources>
