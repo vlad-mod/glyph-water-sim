@@ -1,5 +1,8 @@
 name: Android CI
 
+env:
+  main_project_module: app
+  
 on:
   push:
     branches: [ "main" ]
