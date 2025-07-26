@@ -9,6 +9,7 @@ data class SettingsState(
     val waterAmount: Float = 20f,
     val simSpeed: Float = 4f,
     val particleSize: Float = 0.3f,
+    val simType: Float = 0.95f,
     val borders: Boolean = true
 )
 
@@ -23,9 +24,11 @@ class SettingsViewModel(private val dataStore: DataStore) : ViewModel() {
                 dataStore.waterAmountFlow,
                 dataStore.simSpeedFlow,
                 dataStore.borderFlow,
-                dataStore.particleSizeFlow
-            ) { water, sim, borders, particleSize ->
-                SettingsState(water, sim, particleSize, borders)
+                dataStore.particleSizeFlow,
+                dataStore.simTypeFlow,
+
+                ) { water, sim, borders, particleSize, simType ->
+                SettingsState(water, sim, particleSize, simType, borders)
             }.collect {
                 _uiState.value = it
             }
@@ -45,6 +48,11 @@ class SettingsViewModel(private val dataStore: DataStore) : ViewModel() {
     fun onParticleSizeChange(particleSize: Float) {
         _uiState.value = _uiState.value.copy(particleSize = particleSize)
         viewModelScope.launch { dataStore.saveParticleSize(particleSize) }
+    }
+
+    fun onSimTypeChange(simType: Float) {
+        _uiState.value = _uiState.value.copy(simType = simType)
+        viewModelScope.launch { dataStore.saveSimType(simType) }
     }
 
     fun onBorderChange(borders: Boolean) {

@@ -15,6 +15,7 @@ class DataStore(private val context: Context) {
         val WATER_KEY = floatPreferencesKey("waterAmount")
         val SIM_SPEED_KEY = floatPreferencesKey("simSpeed")
         val PARTICLE_SIZE_KEY = floatPreferencesKey("particleSize")
+        val SIM_TYPE_KEY = floatPreferencesKey("simType")
         val BORDER_KEY = booleanPreferencesKey("borders")
     }
 
@@ -23,10 +24,13 @@ class DataStore(private val context: Context) {
 
 
     val simSpeedFlow: Flow<Float> = context.dataStore.data
-        .map { it[SIM_SPEED_KEY] ?: 0.5f }
+        .map { it[SIM_SPEED_KEY] ?: 5f }
 
     val particleSizeFlow: Flow<Float> = context.dataStore.data
-        .map { it[PARTICLE_SIZE_KEY] ?: 0.5f }
+        .map { it[PARTICLE_SIZE_KEY] ?: 0.3f }
+
+    val simTypeFlow: Flow<Float> = context.dataStore.data
+        .map { it[SIM_TYPE_KEY] ?: 0.95f }
 
     val borderFlow: Flow<Boolean> = context.dataStore.data
         .map { it[BORDER_KEY] ?: true }
@@ -38,8 +42,13 @@ class DataStore(private val context: Context) {
     suspend fun saveSimSpeed(simSpeed: Float) {
         context.dataStore.edit { it[SIM_SPEED_KEY] = simSpeed }
     }
+
     suspend fun saveParticleSize(particleSize: Float) {
         context.dataStore.edit { it[PARTICLE_SIZE_KEY] = particleSize }
+    }
+
+    suspend fun saveSimType(simType: Float) {
+        context.dataStore.edit { it[SIM_TYPE_KEY] = simType }
     }
 
     suspend fun saveBorder(border: Boolean) {

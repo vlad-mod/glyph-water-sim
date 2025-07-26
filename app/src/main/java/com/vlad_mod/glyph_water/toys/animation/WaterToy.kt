@@ -73,6 +73,7 @@ class WaterToy : GlyphMatrixService("Water Toy") {
                 dataStore.waterAmountFlow.first(),
                 dataStore.simSpeedFlow.first(),
                 dataStore.particleSizeFlow.first(),
+                dataStore.simTypeFlow.first(),
                 dataStore.borderFlow.first(),
             );
 
@@ -163,7 +164,7 @@ class WaterToy : GlyphMatrixService("Water Toy") {
             DELAY * settings.simSpeed,
             gravityX,
             gravityY,
-            0.95,
+            settings.simType.toDouble(),
             1,
             1,
             1.0,

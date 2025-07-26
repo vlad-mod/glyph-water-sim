@@ -1,18 +1,24 @@
 package com.vlad_mod.glyph_water
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlin.text.format
 
+
 @Composable
 fun SettingsScreen(dataStore: DataStore) {
+
     val viewModel: SettingsViewModel = viewModel(factory = viewModelFactory {
         initializer { SettingsViewModel(dataStore) }
     })
@@ -49,6 +55,17 @@ fun SettingsScreen(dataStore: DataStore) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
+        Text(text = "Simulation behaviour: ${"%.2f".format(state.simType)}")
+        Slider(
+            value = state.simType,
+            onValueChange = { viewModel.onSimTypeChange(it) },
+            valueRange = 0f..1f,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Text(text = "Changes simulation behaviour:\n0 - particles are more viscous \n1 - particles are less viscous ")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = "Enable borders")
 
@@ -58,4 +75,11 @@ fun SettingsScreen(dataStore: DataStore) {
             )
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    val dataStore = DataStore(TestContext());
+    SettingsScreen(dataStore)
 }
