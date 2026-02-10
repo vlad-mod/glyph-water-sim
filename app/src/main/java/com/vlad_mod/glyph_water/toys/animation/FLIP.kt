@@ -150,38 +150,66 @@ class FLIP(
     fun handleParticleCollisions(obstacleX: Double, obstacleY: Double, obstacleRadius: Double) {
         val h = 1.0 / fInvSpacing
         val r = particleRadius
-        val or2 = obstacleRadius * obstacleRadius
         val minDist = obstacleRadius + r
         val minDist2 = minDist * minDist
-        val minX = h + r
-        val maxX = (fNumX - 1) * h - r
-        val minY = h + r
-        val maxY = (fNumY - 1) * h - r
 
         for (i in 0 until numParticles) {
             var x = particlePos[2 * i]
             var y = particlePos[2 * i + 1]
+
+            // Check collision with obstacle
             val dx = x - obstacleX
             val dy = y - obstacleY
             val d2 = dx * dx + dy * dy
 
-            if (d2 < minDist2) {
-                // Set to obstacle velocity (stub: override with actual scene)
-                particleVel[2 * i] = 0.0 // scene.obstacleVelX
-                particleVel[2 * i + 1] = 0.0 // scene.obstacleVelY
+            if (d2 < minDist2 && d2 > 0.0) {
+                val d = sqrt(d2)
+                val pushDist = minDist - d
+                x += dx / d * pushDist
+                y += dy / d * pushDist
+                particleVel[2 * i] = 0.0
+                particleVel[2 * i + 1] = 0.0
             }
 
-            if (x < minX) {
-                x = minX; particleVel[2 * i] = 0.0
-            }
-            if (x > maxX) {
-                x = maxX; particleVel[2 * i] = 0.0
-            }
-            if (y < minY) {
-                y = minY; particleVel[2 * i + 1] = 0.0
-            }
-            if (y > maxY) {
-                y = maxY; particleVel[2 * i + 1] = 0.0
+            // Check collision with solid cells
+            val xi = clamp(floor(x * fInvSpacing).toInt(), 0, fNumX - 1)
+            val yi = clamp(floor(y * fInvSpacing).toInt(), 0, fNumY - 1)
+            val cellNr = xi * fNumY + yi
+
+            if (s[cellNr] == 0.0) {
+                // Particle is inside a solid cell, push it out
+                // Find the nearest non-solid cell
+                var minDist = Double.MAX_VALUE
+                var bestX = x
+                var bestY = y
+
+                for (di in -2..2) {
+                    for (dj in -2..2) {
+                        val ni = xi + di
+                        val nj = yi + dj
+                        if (ni < 0 || ni >= fNumX || nj < 0 || nj >= fNumY) continue
+
+                        val nCellNr = ni * fNumY + nj
+                        if (s[nCellNr] > 0.0) {
+                            // This is a non-solid cell
+                            val cx = (ni + 0.5) * h
+                            val cy = (nj + 0.5) * h
+                            val dist = sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy))
+                            if (dist < minDist) {
+                                minDist = dist
+                                bestX = cx
+                                bestY = cy
+                            }
+                        }
+                    }
+                }
+
+                if (minDist < Double.MAX_VALUE) {
+                    x = bestX
+                    y = bestY
+                    particleVel[2 * i] = 0.0
+                    particleVel[2 * i + 1] = 0.0
+                }
             }
 
             particlePos[2 * i] = x
@@ -249,6 +277,7 @@ class FLIP(
             u.fill(0.0)
             v.fill(0.0)
 
+            // Set cell types based on s array (externally set)
             for (i in 0 until fNumCells) {
                 cellType[i] = if (s[i] == 0.0) SOLID_CELL else AIR_CELL
             }

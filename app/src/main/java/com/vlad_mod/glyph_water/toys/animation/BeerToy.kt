@@ -683,7 +683,7 @@ class BeerToy : GlyphMatrixService("Beer Toy") {
     }
     var gravityX = 0.0;
     var gravityY = 0.0;
-
+    var rep = 10;
 
     @SuppressLint("ServiceCast")
     override fun performOnServiceConnected(
@@ -719,22 +719,28 @@ class BeerToy : GlyphMatrixService("Beer Toy") {
 
             var numX = floor((relWaterWidth * tankWidth - 2.0 * h - 2.0 * r) / dx).toInt();
             var numY = floor((relWaterHeight * tankHeight - 2.0 * h - 2.0 * r) / dy).toInt();
-            var maxParticles = numX * numY;
+            var maxParticles = 400 * 5;
 
 
             flip = FLIP(density, tankWidth, tankHeight, h, r, maxParticles);
-            flip!!.numParticles = 40 * 2;
+
+
+            flip!!.numParticles = 40 * rep;
 
             //add water from 9,8 to 13,15
             var p = 0;
-            for (i in 9 until 13) {
-                for (j in 8 until 15) {
-                    flip!!.particlePos[p++] = i.toDouble();
-                    flip!!.particlePos[p++] = j.toDouble();
-                    flip!!.particlePos[p++] = i.toDouble() + 0.5;
-                    flip!!.particlePos[p++] = j.toDouble() + 0.5;
+
+            var offset = 0.0;
+            for (n in 0 until rep) {
+                for (i in 8 until 15) {
+                    for (j in 9 until 13) {
+                        flip!!.particlePos[p++] = i.toDouble() + offset;
+                        flip!!.particlePos[p++] = j.toDouble() + offset;
+                    }
                 }
+                offset += 1.0/rep;
             }
+
 
             //add beer mug
             var n = flip!!.fNumY;
@@ -816,6 +822,17 @@ class BeerToy : GlyphMatrixService("Beer Toy") {
     }
 
     override fun onTouchPointLongPress() {
-        //add beer
+        //reset beer
+        var p = 0;
+        var offset = 0.0;
+        for (n in 0 until rep) {
+            for (i in 8 until 15) {
+                for (j in 9 until 13) {
+                    flip!!.particlePos[p++] = i.toDouble() + offset;
+                    flip!!.particlePos[p++] = j.toDouble() + offset;
+                }
+            }
+            offset += 1.0/rep;
+        }
     }
 }
