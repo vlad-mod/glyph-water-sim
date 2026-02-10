@@ -3,4 +3,7 @@
 
     <string name="toy_name">Glyph water toy</string>
     <string name="toy_summary">Simulates water on glyph matrix display.</string>
+
+    <string name="toy_beer_name">Glyph beer toy</string>
+    <string name="toy_beer_summary">Simulates beer on glyph matrix display.</string>
 </resources>
