@@ -79,10 +79,17 @@ class WaterToy : GlyphMatrixService("Water Toy") {
 
             // initialization, taken from TenMinutePhysics
             var res = 24;
-            var tankHeight = 24.0;
-            var tankWidth = 24.0;
-            var h = tankHeight / res;
+            // visible (glyph matrix) extent, independent of the extra padding cells
+            var visibleTankHeight = 24.0;
+            var visibleTankWidth = 24.0;
+            var h = visibleTankHeight / res;
             var density = 500.0;
+
+            // the FLIP grid is padded with an extra ring of cells on every side so that,
+            // when borders are enabled, the solid wall sits just outside the visible region
+            // instead of on the outermost visible pixels.
+            var tankHeight = visibleTankHeight + 2.0 * PADDING * h;
+            var tankWidth = visibleTankWidth + 2.0 * PADDING * h;
 
             var relWaterHeight = settings.waterAmount / 24.0;
             var relWaterWidth = settings.waterAmount / 24.0;
@@ -91,20 +98,21 @@ class WaterToy : GlyphMatrixService("Water Toy") {
             var dx = 2.0 * r;
             var dy = dx;
 
-            var numX = floor((relWaterWidth * tankWidth - 2.0 * h - 2.0 * r) / dx).toInt();
-            var numY = floor((relWaterHeight * tankHeight - 2.0 * h - 2.0 * r) / dy).toInt();
+            var numX = floor((relWaterWidth * visibleTankWidth - 2.0 * h - 2.0 * r) / dx).toInt();
+            var numY = floor((relWaterHeight * visibleTankHeight - 2.0 * h - 2.0 * r) / dy).toInt();
             var maxParticles = numX * numY;
 
 
             flip = FLIP(density, tankWidth, tankHeight, h, r, maxParticles);
             flip!!.numParticles = numX * numY;
 
-            //add water
+            //add water (offset by the padding so it fills the visible region)
+            var padOffset = PADDING * h;
             var p = 0;
             for (i in 0 until numX) {
                 for (j in 0 until numY) {
-                    flip!!.particlePos[p++] = h + r + dx * i + (if (j % 2 == 0) 0.0 else r);
-                    flip!!.particlePos[p++] = h + r + dy * j
+                    flip!!.particlePos[p++] = padOffset + h + r + dx * i + (if (j % 2 == 0) 0.0 else r);
+                    flip!!.particlePos[p++] = padOffset + h + r + dy * j
                 }
             }
 
@@ -179,14 +187,20 @@ class WaterToy : GlyphMatrixService("Water Toy") {
 
         val grid = Array(HEIGHT * WIDTH) { 0 }
 
-        for (n in 0..<HEIGHT * WIDTH) {
+        // the FLIP grid is padded on every side with PADDING extra cells (used for the
+        // border wall), so only crop out the centered WIDTH x HEIGHT visible region.
+        val gridStride = flip!!.fNumY
+        for (i in 0 until WIDTH) {
+            for (j in 0 until HEIGHT) {
+                val cellNr = (i + PADDING) * gridStride + (j + PADDING)
 
-            var color = ((((flip!!.cellColor[n * 3 + 0] +
-                    flip!!.cellColor[n * 3 + 1] +
-                    flip!!.cellColor[n * 3 + 2]) / 3) - (flip!!.cellColor[n * 3 + 2] * 0.5)) * 4096)
-            color = clamp(color, 0.0, 4096.0);
+                var color = ((((flip!!.cellColor[cellNr * 3 + 0] +
+                        flip!!.cellColor[cellNr * 3 + 1] +
+                        flip!!.cellColor[cellNr * 3 + 2]) / 3) - (flip!!.cellColor[cellNr * 3 + 2] * 0.5)) * 4096)
+                color = clamp(color, 0.0, 4096.0);
 
-            grid[n] = color.toInt();
+                grid[i * HEIGHT + j] = color.toInt();
+            }
         }
         return grid.toIntArray()
     }
@@ -195,6 +209,10 @@ class WaterToy : GlyphMatrixService("Water Toy") {
         private const val WIDTH = 25
         private const val HEIGHT = 25
         private const val RADIUS = 13.0
+
+        // number of extra FLIP grid cells added on every side, outside the visible region,
+        // used to host the solid border wall so it isn't rendered on the glyph matrix.
+        private const val PADDING = 1
 
         //delay less than 15ms slows down animation
         private const val DELAY = 0.015//s
